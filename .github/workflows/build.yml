@@ -1,0 +1,91 @@
+name: Build Cancro Kernel
+
+on:
+  schedule:
+    - cron: '0 21 * * *'
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout kernel source
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 1
+          
+      - name: Install ccache
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ccache
+          ccache --version
+          
+      - name: Download & extract Linaro GCC 4.9.4 toolchain
+        run: |
+          mkdir -p /opt/toolchain
+          cd /opt/toolchain
+          curl -L --fail --connect-timeout 30 --max-time 300 \
+            https://mirrors.tuna.tsinghua.edu.cn/armbian-releases/_toolchain/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi.tar.xz \
+            -o gcc.tar.xz
+          tar -xJf gcc.tar.xz
+          /opt/toolchain/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi/bin/arm-linux-gnueabi-gcc --version
+
+      - name: Export build environment
+        run: |
+          echo "ARCH=arm" >> $GITHUB_ENV
+          echo "CROSS_COMPILE=ccache /opt/toolchain/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi/bin/arm-linux-gnueabi-" >> $GITHUB_ENV
+          echo "/opt/toolchain/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi/bin" >> $GITHUB_PATH
+
+      - name: Verify toolchain
+        run: |
+          arm-linux-gnueabi-gcc --version | head -n1
+
+      - name: Generate defconfig
+        run: |
+          make cyanogen_cancro_defconfig
+
+      - name: Build kernel
+        run: |
+          make HOSTCFLAGS="-fcommon" LOCALVERSION="-PowerBy_DeepSea" -j$(nproc)
+          
+      - name: Verify zImage-dtb
+        run: |
+          ls -lh arch/arm/boot/zImage-dtb
+
+      - name: Verify wlan.ko
+        run: |
+          ls -lh drivers/staging/prima/wlan.ko
+
+      - name: Package artifacts
+        run: |
+          mkdir -p out
+          cp arch/arm/boot/zImage-dtb out/
+          cp drivers/staging/prima/wlan.ko out/
+          echo "Kernel built at $(date)" > out/version.txt
+          echo "KernelSU commit: $(git -C KernelSU rev-parse --short HEAD)" >> out/version.txt
+          echo "---" >> out/version.txt
+          cat out/version.txt
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: cancro-kernel-${{ github.run_number }}
+          path: out/
+          retention-days: 30
+
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log-${{ github.run_number }}
+          path: |
+            .config
+            build.log
+            drivers/staging/prima/
+          retention-days: 7
