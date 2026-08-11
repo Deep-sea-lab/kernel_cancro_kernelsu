@@ -1,0 +1,41 @@
+name: Dump KernelSU Submodule
+
+on:
+  schedule:
+    - cron: '0 21 * * *'
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  dump:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout parent repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: false
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Update KernelSU submodule to upstream latest
+        run: |
+          git submodule update --init --remote KernelSU
+
+      - name: Commit and push if KernelSU changed
+        run: |
+          if ! git diff --quiet; then
+            git add KernelSU
+            git commit -m "chore: dump KernelSU submodule to latest [skip ci]"
+            git push
+          else
+            echo "KernelSU already up to date, nothing to commit."
+          fi
