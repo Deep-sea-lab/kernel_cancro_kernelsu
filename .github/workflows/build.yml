@@ -31,7 +31,7 @@ jobs:
           mkdir -p /opt/toolchain
           cd /opt/toolchain
           curl -L --fail --connect-timeout 30 --max-time 300 \
-            https://mirrors.tuna.tsinghua.edu.cn/armbian-releases/_toolchain/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi.tar.xz \
+            https://github.com/Deep-sea-lab/kernel_cancro_kernelsu/releases/download/gcc4.9.4/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi.tar.xz \
             -o gcc.tar.xz
           tar -xJf gcc.tar.xz
           /opt/toolchain/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi/bin/arm-linux-gnueabi-gcc --version
