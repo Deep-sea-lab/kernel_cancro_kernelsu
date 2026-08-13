@@ -62,12 +62,21 @@ jobs:
         run: |
           ls -lh drivers/staging/prima/wlan.ko
 
-      - name: Package artifacts
+      - name: Clone AnyKernel3 and package zip
+        if: success()
         run: |
-          mkdir -p out
+          git clone --depth=1 https://github.com/osm0sis/AnyKernel3.git anykernel3
+          cp arch/arm/boot/zImage-dtb anykernel3/zImage
+          cd anykernel3
+          rm -rf .git .github README.md LICENSE
+          mkdir -p ../out
+          ZIP_NAME="cancro-kernel-${{ github.run_number }}.zip"
+          zip -r ../out/${ZIP_NAME} . -x ".*" -x "__MACOSX/*"
+          cd ..
           cp arch/arm/boot/zImage-dtb out/
           cp drivers/staging/prima/wlan.ko out/
-          echo "Kernel built at $(date)" > out/version.txt
+          echo "---" > out/version.txt
+          echo "Kernel built at $(date)" >> out/version.txt
           echo "KernelSU commit: $(git -C KernelSU rev-parse --short HEAD)" >> out/version.txt
           echo "---" >> out/version.txt
           cat out/version.txt
