@@ -52,7 +52,7 @@ jobs:
 
       - name: Build kernel
         run: |
-          make HOSTCFLAGS="-fcommon" LOCALVERSION="-PowerBy_DeepSea" -j$(nproc)
+          make HOSTCFLAGS="-fcommon" LOCALVERSION="-PowerBy_DeepSea" -j1
           
       - name: Verify zImage-dtb
         run: |
