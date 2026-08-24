@@ -7,7 +7,7 @@ properties() { '
 kernel.string=KernelSU for Mi 3 (cancro) PowerBy DeepSea
 do.devicecheck=1
 do.modules=1
-do.systemless=1
+do.systemless=0
 do.cleanup=1
 do.cleanuponabort=0
 device.name1=cancro
@@ -15,9 +15,7 @@ device.name2=MI3W
 device.name3=MI3C
 device.name4=MI4
 device.name5=xiaomi3
-supported.versions=
-supported.patchlevels=
-supported.vendorpatchlevels=
+device.name6=virgo
 '; } # end properties
 
 
