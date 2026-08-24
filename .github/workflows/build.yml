@@ -67,6 +67,8 @@ jobs:
         run: |
           git clone --depth=1 https://github.com/osm0sis/AnyKernel3.git anykernel3
           cp arch/arm/boot/zImage-dtb anykernel3/zImage
+          cp drivers/staging/prima/wlan.ko anykernel3/modules/system/lib/modules/wlan.ko
+          cp scripts/anykernel.sh anykernel3/anykernel.sh
           cd anykernel3
           rm -rf .git .github README.md LICENSE
           mkdir -p ../out
